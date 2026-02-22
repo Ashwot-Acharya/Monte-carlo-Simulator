@@ -1,9 +1,10 @@
 import pandas as pd 
+import matplotlib   
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 import random 
-
+matplotlib.use('TkAgg')  # or 'Qt5Agg'
 
 def read_data( filepath):
     df = pd.read_csv(filepath)
@@ -19,7 +20,7 @@ def print_data(list):
 def random_number_generator(simulation_range):
     rand_list = []
     for x in range(simulation_range):
-        rand_list.append(random.randint(0, 99)) 
+        rand_list.append(random.randint(0, 999)) 
     return rand_list
     
 
@@ -69,15 +70,44 @@ def simulate(random_numb , generate_csv):
                 recorded_data.append(x_variable[x])
     return recorded_data 
 
-def plot_data(random_numb_list , recorded_data):
-    for x in range(len(random_numb_list)):
-        plt.scatter(random_numb_list[x],recorded_data[x] )
-    plt.xlabel("random numbers")
-    plt.ylabel("frequency")
+def plot_data(random_numb_list, recorded_data):
+    plt.figure()
+    plt.plot(random_numb_list, recorded_data)
+    plt.xlabel("Random Numbers")
+    plt.ylabel("Simulated Values")
+    plt.title("Monte Carlo Simulation")
+    plt.grid(True)
     plt.savefig("plotted.png")
+    plt.show()
 
-def animated_plot():
-    pass
+def animated_plot(random_numb_list, recorded_data):
+    fig, ax = plt.subplots()
+    x_data = []
+    y_data = []
+    line, = ax.plot([], [], lw=2)
+
+    ax.set_xlim(min(random_numb_list), max(random_numb_list))
+    ax.set_ylim(min(recorded_data), max(recorded_data))
+    ax.set_xlabel("Random Numbers")
+    ax.set_ylabel("Simulated Values")
+    ax.set_title("Animated Monte Carlo Simulation")
+
+    def update(frame):
+        x_data.append(random_numb_list[frame])
+        y_data.append(recorded_data[frame])
+        line.set_data(x_data, y_data)
+        return line,
+
+    anim = animation.FuncAnimation(
+        fig,
+        update,
+        frames=len(random_numb_list),
+        interval=200,
+        repeat=False
+    )
+    return anim
+
+    plt.show()
 
 def main(): 
     frequency = read_data('./data.csv') 
@@ -89,6 +119,8 @@ def main():
     print(random_numbers)
     print(recorded_data)
     plot_data(random_numbers , recorded_data)
+    anim = animated_plot(random_numbers , recorded_data)
+    plt.show()
 
 
 if __name__ == "__main__":
