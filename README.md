@@ -1,39 +1,39 @@
-
 # Monte Carlo Simulator
 
-A from-scratch Monte Carlo simulation engine in Python. Given an empirical frequency distribution from a CSV file, it performs **inverse transform sampling** to simulate outcomes and visualize the results — statically and animated.
+A Python-based Monte Carlo simulation engine that uses inverse transform sampling to generate outcomes from empirical frequency distributions. This tool helps analyze and visualize simulated data, making it useful for decision-making and risk analysis.
 
----
+## Overview
+
+The simulator reads frequency data from a CSV file, constructs a probability distribution, and generates simulated outcomes through statistical sampling. The results are visualized to show the behavior of the simulated system.
 
 ## How It Works
 
-The core method is **inverse transform sampling**:
+The core method uses inverse transform sampling:
 
-1. Read frequency data from CSV
-2. Normalize frequencies into probabilities → build a CDF
-3. Map the CDF onto the integer range `[0, 1000]` as lookup bins
-4. Generate uniform random integers, map each to an outcome via its bin
-5. Plot the simulated sequence
+1. Read frequency data from CSV file
+2. Normalize frequencies into probabilities and build a cumulative distribution function (CDF)
+3. Map the CDF onto bins for lookup
+4. Generate uniform random values and map each to an outcome via its bin
+5. Plot and analyze the simulated sequence
 
-```
-Frequency CSV → Probability distribution → CDF → Bin assignment → Simulate → Plot
-```
+This approach is mathematically equivalent to Monte Carlo integration, where properties of a distribution are estimated by drawing samples and analyzing aggregate behavior.
 
-This is the same mathematical mechanism behind Monte Carlo integration: estimate properties of a distribution by drawing samples and aggregating.
-
----
-
-## Files
+## Project Structure
 
 ```
 .
-├── simulator.py               # Continuous simulator with animated line plot
-├── monte_carlo_descrete.py    # Discrete simulator with scatter plot
-├── data.csv                   # Input: x_val and frequency columns
-└── generated.csv              # Intermediate: x_val with assigned RNG bins
+├── simulator.py               # Main continuous simulator with animated visualization
+├── monte_carlo_descrete.py    # Discrete simulator with scatter plot visualization
+├── data.csv                   # Input data: x values and their frequencies
+├── generated.csv              # Intermediate file: x values with assigned bins
+└── output/                    # Generated visualizations and results
+    ├── gaussian_diagnostics.png
+    └── gaussian_joint.png
 ```
 
-### CSV Format
+## Input Data Format
+
+The simulator expects a CSV file with two columns:
 
 ```csv
 x_val,frequency
@@ -42,21 +42,32 @@ x_val,frequency
 3,40
 ```
 
----
+## Results
 
-## Usage
+![Gaussian Diagnostics](output/gaussian_diagnostics.png)
+
+![Gaussian Joint Distribution](output/gaussian_joint.png)
+
+## Installation and Usage
+
+### Requirements
+
+- Python 3.x
+- pandas
+- matplotlib
+
+### Running the Simulator
 
 ```bash
 pip install pandas matplotlib
 python simulator.py
 ```
 
-Produces `plotted.png` and an animated plot window.
+The simulator generates visualizations and saves output to the `output/` directory.
 
----
+## Use Cases
 
-## Dependencies
-
-- Python 3.x
-- `pandas`
-- `matplotlib`
+- Risk assessment and uncertainty analysis
+- Financial modeling and forecasting
+- Decision support where probability distributions are known
+- Statistical validation of models against empirical data
