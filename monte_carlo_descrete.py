@@ -1,97 +1,82 @@
-import pandas as pd 
+import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import random
+import bisect
 
-import random 
 
-
-def read_data( filepath):
+def read_data(filepath: str) -> list:
     df = pd.read_csv(filepath)
-    col_data = df['frequency']
-    list = col_data.tolist()
-    return list
-
-def print_data(list): 
-    for x in list:
-        print(x)
+    return df['frequency'].tolist()
 
 
-def random_number_generator(simulation_range):
-    rand_list = []
-    for x in range(simulation_range):
-        rand_list.append(random.randint(0, 99)) 
-    return rand_list
-    
-
-def calc_total(list):
-    sum = 0 
-    for x in list:
-        sum = sum +x 
-    return sum
+def random_number_generator(n: int) -> list:
+    return [random.randint(0, 99) for _ in range(n)]
 
 
-def frequency_distribution(sum , list):
-    distribution_list = []
-    for x in list:
-        a = x / sum 
-        distribution_list.append(a)
-    return distribution_list
+def frequency_distribution(freq_list: list) -> list:
+    total = sum(freq_list)
+    return [x / total for x in freq_list]
 
-def assign_random(filepath , newfile , distribution_list ):
-    df = pd.read_csv(filepath) 
-    main_data = df['x_val']
-    col = main_data.tolist()
-    start_tag = []
-    end_tag = []
-    s =0
-    for x in distribution_list:
-        e = s + int(x*1000) - 1 
-        start_tag.append(s)
-        end_tag.append(e)
-        s = e + 1 
-    output_df = pd.DataFrame({
-        'x_val': col[:len(start_tag)],  
-        'start_tag': start_tag,
-        'end_tag': end_tag
-    })
 
-    output_df.to_csv(newfile, index = False)
+def assign_random(filepath: str, newfile: str, distribution: list) -> None:
+    df = pd.read_csv(filepath)
+    col = df['x_val'].tolist()
 
-def simulate(random_numb , generate_csv):
-    df = pd.read_csv(generate_csv) 
-    x_variable = df['x_val'].tolist()
-    start_tag = df['start_tag'].tolist() 
-    end_tag = df['end_tag'].tolist()
-    recorded_data = []
-    for y in random_numb:
-        for x  in range(len(df)): 
-            if start_tag[x] <= y <= end_tag[x]: 
-                recorded_data.append(x_variable[x])
-    return recorded_data 
+    assert len(col) >= len(distribution), "Not enough x_val rows for distribution"
 
-def plot_data(random_numb_list , recorded_data):
-    for x in range(len(random_numb_list)):
-        plt.scatter(random_numb_list[x],recorded_data[x] )
-    plt.xlabel("random numbers")
-    plt.ylabel("frequency")
+    start_tags, end_tags = [], []
+    s = 0
+    for x in distribution:
+        e = s + round(x * 1000) - 1  # round instead of int to reduce drift
+        start_tags.append(s)
+        end_tags.append(e)
+        s = e + 1
+
+    pd.DataFrame({
+        'x_val': col[:len(start_tags)],
+        'start_tag': start_tags,
+        'end_tag': end_tags
+    }).to_csv(newfile, index=False)
+
+
+def simulate(random_nums: list, generated_csv: str) -> list:
+    df = pd.read_csv(generated_csv)
+    x_vals = df['x_val'].tolist()
+    start_tags = df['start_tag'].tolist()
+
+    recorded = []
+    for y in random_nums:
+        # bisect finds the right bucket in O(log n) instead of O(n)
+        idx = bisect.bisect_right(start_tags, y) - 1
+        if idx >= 0 and idx < len(x_vals):
+            recorded.append(x_vals[idx])
+        else:
+            recorded.append(None)  # explicit instead of silent drop
+    return recorded
+
+
+def plot_data(random_nums: list, recorded_data: list) -> None:
+    plt.figure()
+    plt.scatter(random_nums, recorded_data, alpha=0.6)
+    plt.xlabel("Random Numbers (0–99)")
+    plt.ylabel("Simulated Outcome")
+    plt.title("Monte Carlo Simulation Results")
+    plt.tight_layout()
     plt.savefig("plotted.png")
+    print("Plot saved to plotted.png")
 
-def animated_plot():
-    pass
 
-def main(): 
-    frequency = read_data('./data.csv') 
+def main():
+    frequency = read_data('./data.csv')
     random_numbers = random_number_generator(50)
-    sum = calc_total(frequency)
-    distribute = frequency_distribution(sum , frequency)
-    assign_random('./data.csv' , "./generated.csv", distribute)
+    distribution = frequency_distribution(frequency)
+    assign_random('./data.csv', './generated.csv', distribution)
     recorded_data = simulate(random_numbers, './generated.csv')
-    print(random_numbers)
-    print(recorded_data)
-    plot_data(random_numbers , recorded_data)
+
+    print("Random numbers:", random_numbers)
+    print("Recorded data: ", recorded_data)
+    plot_data(random_numbers, recorded_data)
 
 
 if __name__ == "__main__":
     main()
-
-
