@@ -149,12 +149,11 @@ rhat = r_hat(result)
 print(f"R-hat: {rhat}  (< 1.01 = converged)")
 ```
 
-## Output Folder
+## Results
 
-Generated visualizations saved to `output/`:
-- `gaussian_diagnostics.png` - Full diagnostic plots
-- `gaussian_joint.png` - Joint posterior visualization
-- And similar files for each experiment
+![Gaussian Diagnostics](output/gaussian_diagnostics.png)
+
+![Gaussian Joint Distribution](output/gaussian_joint.png)
 
 ## Key Concepts
 
